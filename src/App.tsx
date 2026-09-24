@@ -281,7 +281,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900 font-sans antialiased selection:bg-amber-400 selection:text-slate-900">
+    <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900 font-sans antialiased selection:bg-amber-400 selection:text-slate-900 overflow-x-hidden w-full max-w-full">
       {/* Navigation Bar */}
       <Navbar
         currentView={currentView}
@@ -291,7 +291,7 @@ export default function App() {
       />
 
       {/* Main Content View Switcher */}
-      <main className="flex-1">
+      <main className="flex-1 w-full max-w-full overflow-x-hidden">
         {currentView === 'home' && (
           <HomeView
             onNavigate={handleNavigate}
