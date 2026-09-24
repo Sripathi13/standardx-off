@@ -1,0 +1,6 @@
+{
+  "name": "STANDARD X",
+  "description": "Construction Material Estimation, BIS-Standard Quality Recommendation, Pricing, Cart, and Quotation Platform.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
