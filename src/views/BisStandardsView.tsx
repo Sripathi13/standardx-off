@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BIS_STANDARDS_LIBRARY } from '../data/bisStandards';
 import { BisStandardInfo } from '../types';
 import { BisDetailModal } from '../components/BisDetailModal';
+import { fetchBisStandardsFromApi } from '../services/bisApiService';
 import { 
   ShieldCheck, 
   Search, 
@@ -14,10 +15,30 @@ import {
 } from 'lucide-react';
 
 export const BisStandardsView: React.FC = () => {
+  const [standardsList, setStandardsList] = useState<BisStandardInfo[]>(BIS_STANDARDS_LIBRARY);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [selectedStandard, setSelectedStandard] = useState<BisStandardInfo | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isConnectingApi, setIsConnectingApi] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    setIsConnectingApi(true);
+    fetchBisStandardsFromApi().then((apiStandards) => {
+      if (!isMounted) return;
+      if (apiStandards && apiStandards.length > 0) {
+        setStandardsList(apiStandards);
+      }
+      setIsConnectingApi(false);
+    }).catch(() => {
+      if (isMounted) setIsConnectingApi(false);
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const categories = [
     'All',
@@ -29,14 +50,14 @@ export const BisStandardsView: React.FC = () => {
     'Water & Chemicals'
   ];
 
-  const filteredStandards = BIS_STANDARDS_LIBRARY.filter((std) => {
+  const filteredStandards = standardsList.filter((std) => {
     const matchesSearch = 
       std.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
       std.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       std.scope.toLowerCase().includes(searchQuery.toLowerCase()) ||
       std.category.toLowerCase().includes(searchQuery.toLowerCase());
 
-    const matchesCategory = selectedCategory === 'All' || std.category === selectedCategory;
+    const matchesCategory = selectedCategory === 'All' || std.category.toLowerCase().includes(selectedCategory.toLowerCase());
 
     return matchesSearch && matchesCategory;
   });

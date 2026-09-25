@@ -1,4 +1,5 @@
 import { ExtractedTenderRequirement } from './tenderExtractionService';
+import { generateProjectBisStandardsWithApi } from './bisApiService';
 
 export interface ApplicableStandardDetail {
   code: string;
@@ -231,6 +232,483 @@ export const TMT_REBAR_APPLICABLE_STANDARDS: ApplicableStandardDetail[] = [
   }
 ];
 
+export const CEMENT_APPLICABLE_STANDARDS: ApplicableStandardDetail[] = [
+  {
+    code: 'IS 269:2015',
+    title: 'Ordinary Portland Cement — Specification (Consolidated 33, 43 and 53 Grades)',
+    role: 'Core Specification',
+    purpose: 'Governing product specification for manufacturing, physical and chemical thresholds, fineness, strength grades, and mandatory ISI certification.',
+    keyClauses: [
+      'Clause 5 & Table 2: Chemical requirements for MgO, SO3, insoluble residue, and LOI',
+      'Clause 6 & Table 3: Physical requirements for Blaine fineness, setting times, soundness, and compressive strength',
+      'Clause 10: Retest and rejection criteria for batch consignments'
+    ],
+    testParametersOrAcceptance: '53 Grade: 28-day Compressive Strength ≥ 53.0 MPa, Fineness ≥ 225 m²/kg, Initial set ≥ 30 min, Le-Chatelier Soundness ≤ 10 mm.',
+    isMandatoryQco: true,
+    bisUrl: getBisStandardVerificationUrl('IS 269')
+  },
+  {
+    code: 'IS 4031 (Parts 1 to 15)',
+    title: 'Methods of physical tests for hydraulic cement',
+    role: 'Mandatory Test',
+    purpose: 'Standardized physical test procedures for fineness by air permeability (Part 2), soundness (Part 3), normal consistency (Part 4), setting time (Part 5), and compressive strength (Part 6).',
+    keyClauses: [
+      'Part 2: Fineness by Blaine air permeability method',
+      'Part 5: Initial and final setting times via Vicat apparatus',
+      'Part 6: Compressive strength of 70.6 mm mortar cubes at 3, 7, and 28 days'
+    ],
+    testParametersOrAcceptance: 'Compressive strength of 1:3 standard Ennore sand mortar cubes: Min 27 MPa (3-day), 37 MPa (7-day), 53 MPa (28-day).',
+    isMandatoryQco: true,
+    bisUrl: getBisStandardVerificationUrl('IS 4031')
+  },
+  {
+    code: 'IS 4032:1985',
+    title: 'Method of chemical analysis of hydraulic cement',
+    role: 'Chemical Analysis',
+    purpose: 'Quantitative wet chemical and spectrometric determination of loss on ignition, silica, alumina, iron oxide, lime saturation factor, magnesia, and total equivalent alkali.',
+    keyClauses: [
+      'Clause 4: Insoluble residue determination in hydrochloric acid and sodium carbonate',
+      'Clause 8: Total sulfur reported as SO3 (max 3.5% for OPC 53)',
+      'Clause 14: Total alkali content for alkali-silica reactivity prevention'
+    ],
+    testParametersOrAcceptance: 'Insoluble residue max 5.0%, SO3 max 3.5%, Loss on Ignition max 4.0%, Total Alkalis < 0.60% (for low alkali contracts).',
+    isMandatoryQco: true,
+    bisUrl: getBisStandardVerificationUrl('IS 4032')
+  },
+  {
+    code: 'IS 456:2000',
+    title: 'Plain and reinforced concrete — Code of practice (Clause 5: Cementitious materials)',
+    role: 'Structural Design & Detailing',
+    purpose: 'Directs the selection, storage, and maximum/minimum cementitious content in structural RCC members to prevent thermal shrinkage and ensure durability.',
+    keyClauses: [
+      'Clause 5.1: Permissible types of cements in structural concrete',
+      'Table 5: Minimum cementitious content and maximum water-cement ratio for environmental exposures'
+    ],
+    testParametersOrAcceptance: 'Moderate exposure: Min 300 kg/m³, Max w/c 0.50. Severe exposure: Min 320 kg/m³, Max w/c 0.45.',
+    isMandatoryQco: true,
+    bisUrl: getBisStandardVerificationUrl('IS 456')
+  },
+  {
+    code: 'IS 3535:1986',
+    title: 'Methods of sampling hydraulic cements',
+    role: 'Sampling & Quality Inspection',
+    purpose: 'Prescribes statistical sampling procedures from packaged bags, bulk pressure tankers, and storage silos for quality assurance testing.',
+    keyClauses: [
+      'Clause 3: Incremental sample extraction using sampling tube or auger',
+      'Clause 5: Composite laboratory sample preparation and moisture-tight storage'
+    ],
+    testParametersOrAcceptance: '1 composite sample per lot (up to 50 MT); samples must be tested within 14 days of sampling.',
+    isMandatoryQco: false,
+    bisUrl: getBisStandardVerificationUrl('IS 3535')
+  }
+];
+
+export const AGGREGATES_APPLICABLE_STANDARDS: ApplicableStandardDetail[] = [
+  {
+    code: 'IS 383:2016',
+    title: 'Coarse and fine aggregate for concrete from natural & manufactured sources — Specification',
+    role: 'Core Specification',
+    purpose: 'Primary specification governing grading, mechanical strength, durability, and deleterious substance limits for crushed stone coarse aggregates.',
+    keyClauses: [
+      'Clause 4 & Table 2: Coarse aggregate nominal sizes (20mm, 10mm, 40mm)',
+      'Clause 5 & Table 1: Physical requirements (flakiness, elongation, impact, crushing)',
+      'Clause 6: Alkali-aggregate reactivity limits'
+    ],
+    testParametersOrAcceptance: 'Combined Flakiness & Elongation Index < 30%; Aggregate Impact Value < 24% for structural concrete, < 30% for wearing surfaces.',
+    isMandatoryQco: true,
+    bisUrl: getBisStandardVerificationUrl('IS 383')
+  },
+  {
+    code: 'IS 2386 (Part 1):1963',
+    title: 'Methods of test for aggregates for concrete — Part 1: Particle size and shape',
+    role: 'Mandatory Test',
+    purpose: 'Standardized sieve analysis, flakiness index, and elongation index measurement of coarse aggregate samples.',
+    keyClauses: [
+      'Clause 2: Sieve analysis with standard IS sieves (40mm, 20mm, 10mm, 4.75mm)',
+      'Clause 4: Flakiness gauge measurement (thickness < 0.6 of mean sieve size)',
+      'Clause 5: Length gauge elongation measurement (length > 1.8 of mean sieve size)'
+    ],
+    testParametersOrAcceptance: 'Passing 20mm: 85-100%, Passing 10mm: 0-20%; Combined flakiness and elongation not exceeding 30%.',
+    isMandatoryQco: true,
+    bisUrl: getBisStandardVerificationUrl('IS 2386')
+  },
+  {
+    code: 'IS 2386 (Part 3):1963',
+    title: 'Methods of test for aggregates for concrete — Part 3: Specific gravity, density, voids, absorption and bulking',
+    role: 'Mandatory Test',
+    purpose: 'Determines specific gravity, loose/rodded bulk density, and 24-hour water absorption of coarse aggregates.',
+    keyClauses: [
+      'Clause 2: Specific gravity and water absorption using wire basket in water bath',
+      'Clause 3: Bulk density measurement in calibrated metal container'
+    ],
+    testParametersOrAcceptance: 'Apparent Specific Gravity between 2.60 and 2.80; Water absorption strictly < 2.0% by dry mass.',
+    isMandatoryQco: true,
+    bisUrl: getBisStandardVerificationUrl('IS 2386')
+  },
+  {
+    code: 'IS 2386 (Part 4):1963',
+    title: 'Methods of test for aggregates for concrete — Part 4: Mechanical properties',
+    role: 'Mandatory Test',
+    purpose: 'Quantifies aggregate toughness and crushing resistance under sudden impact and gradual compressive load.',
+    keyClauses: [
+      'Clause 2: Aggregate Crushing Value (ACV) using steel cylinder and 400 kN load',
+      'Clause 3: Aggregate Impact Value (AIV) using standardized 14 kg hammer drop'
+    ],
+    testParametersOrAcceptance: 'AIV max 24% for heavy structural RCC; Los Angeles Abrasion max 30%.',
+    isMandatoryQco: true,
+    bisUrl: getBisStandardVerificationUrl('IS 2386')
+  },
+  {
+    code: 'IS 2430:1986',
+    title: 'Methods for sampling of aggregates for concrete',
+    role: 'Sampling & Quality Inspection',
+    purpose: 'Prescribes statistically representative sampling from stockpiles, conveyor belts, and dump trucks.',
+    keyClauses: [
+      'Clause 4: Minimum mass of gross sample based on nominal maximum aggregate size',
+      'Clause 5: Quartering and riffle box sample reduction procedures'
+    ],
+    testParametersOrAcceptance: '1 sample set per 100 m³ of coarse aggregate delivered to concrete batching plant.',
+    isMandatoryQco: false,
+    bisUrl: getBisStandardVerificationUrl('IS 2430')
+  }
+];
+
+export const SAND_APPLICABLE_STANDARDS: ApplicableStandardDetail[] = [
+  {
+    code: 'IS 383:2016',
+    title: 'Coarse and fine aggregate for concrete from natural & manufactured sources (Zone II Fine Aggregate)',
+    role: 'Core Specification',
+    purpose: 'Governing product specification for fine aggregates, grading zones (I to IV), and manufactured sand (M-Sand).',
+    keyClauses: [
+      'Clause 4.3 & Table 4: Grading limits for Fine Aggregate Zones I, II, III, and IV',
+      'Clause 5.3: Deleterious material caps (silt, clay, organic impurities)'
+    ],
+    testParametersOrAcceptance: 'Zone II grading (Passing 600 micron: 35-59%); Silt content < 3.0% (natural sand) or < 7.0% (M-Sand without clay).',
+    isMandatoryQco: true,
+    bisUrl: getBisStandardVerificationUrl('IS 383')
+  },
+  {
+    code: 'IS 2386 (Part 1):1963',
+    title: 'Methods of test for aggregates — Sieve analysis and Fineness Modulus of sand',
+    role: 'Mandatory Test',
+    purpose: 'Evaluates grain size distribution through standard sieves (4.75mm, 2.36mm, 1.18mm, 600u, 300u, 150u) to calculate Fineness Modulus (FM).',
+    keyClauses: [
+      'Clause 2: Sieve shaking for 15 minutes and cumulative percentage retained calculation',
+      'Clause 2.4: Fineness modulus formula (sum of cumulative percentages retained / 100)'
+    ],
+    testParametersOrAcceptance: 'Fineness Modulus between 2.60 and 2.90 for Zone II structural concrete sand.',
+    isMandatoryQco: true,
+    bisUrl: getBisStandardVerificationUrl('IS 2386')
+  },
+  {
+    code: 'IS 2386 (Part 2):1963',
+    title: 'Methods of test for aggregates — Silt content and organic impurities in fine aggregate',
+    role: 'Chemical Analysis',
+    purpose: 'Rapid field and laboratory determination of micro-fine clay and silt content that weakens cement paste matrix.',
+    keyClauses: [
+      'Clause 2: Volumetric silt jar test in measuring cylinder with saline water',
+      'Clause 3: Colorimetric test for organic impurities using sodium hydroxide'
+    ],
+    testParametersOrAcceptance: 'Silt layer settling on top of sand jar < 6.0% by volume; Organic color lighter than reference standard solution.',
+    isMandatoryQco: true,
+    bisUrl: getBisStandardVerificationUrl('IS 2386')
+  },
+  {
+    code: 'IS 2116:1980',
+    title: 'Sand for masonry mortars — Specification',
+    role: 'Structural Design & Detailing',
+    purpose: 'Specifies particle size distribution and cleanliness of sand intended for brick/block laying masonry mortars.',
+    keyClauses: [
+      'Clause 4: Particle size distribution for masonry mortar (Passing 4.75mm: 100%, 1.18mm: 70-100%)',
+      'Clause 5: Compressive strength of mortar prepared with sand'
+    ],
+    testParametersOrAcceptance: 'Compressive strength of mortar with test sand must not be less than 85% of mortar with standard sand.',
+    isMandatoryQco: true,
+    bisUrl: getBisStandardVerificationUrl('IS 2116')
+  }
+];
+
+export const CONCRETE_APPLICABLE_STANDARDS: ApplicableStandardDetail[] = [
+  {
+    code: 'IS 456:2000',
+    title: 'Plain and reinforced concrete — Code of practice (Design mix benchmarks)',
+    role: 'Core Specification',
+    purpose: 'Parent structural standard establishing characteristic cube compressive strength, exposure classes, and minimum cement content.',
+    keyClauses: [
+      'Clause 6 & Table 5: Concrete mix design benchmarks (M25 / M30 / M35)',
+      'Clause 15: Sampling and strength acceptance criteria'
+    ],
+    testParametersOrAcceptance: 'Characteristic 28-day cube strength: M25 ≥ 25 MPa, M30 ≥ 30 MPa; Individual test result must be within fck - 3 N/mm².',
+    isMandatoryQco: true,
+    bisUrl: getBisStandardVerificationUrl('IS 456')
+  },
+  {
+    code: 'IS 10262:2019',
+    title: 'Concrete mix proportioning — Guidelines (Second Revision)',
+    role: 'Structural Design & Detailing',
+    purpose: 'Authoritative national guidelines for calculating target mean compressive strength, water-binder ratio, aggregate proportions, and admixture dosages.',
+    keyClauses: [
+      'Clause 4: Target mean strength formula f\'ck = fck + 1.65 * s',
+      'Clause 5: Water-cementitious ratio selection based on IS 456 Table 5'
+    ],
+    testParametersOrAcceptance: 'Target mean strength: M25 = 31.6 MPa; M30 = 38.25 MPa with standard deviation s = 4.0/5.0 N/mm².',
+    isMandatoryQco: true,
+    bisUrl: getBisStandardVerificationUrl('IS 10262')
+  },
+  {
+    code: 'IS 516 (Part 1/Sec 1):2021',
+    title: 'Hardened concrete — Methods of test — Compressive strength of concrete specimens',
+    role: 'Mandatory Test',
+    purpose: 'Prescribes casting, curing, and crushing procedures for 150mm concrete cubes using calibrated compression testing machines (CTM).',
+    keyClauses: [
+      'Clause 5: Cube mould tolerances and compaction methods',
+      'Clause 7: Water tank curing temperature (27 ± 2°C) until time of test',
+      'Clause 8: Rate of compressive loading (14 N/mm²/min without shock)'
+    ],
+    testParametersOrAcceptance: 'Average strength of 3 test cubes constitutes one sample result; specimens must show normal pyramidal failure mode.',
+    isMandatoryQco: true,
+    bisUrl: getBisStandardVerificationUrl('IS 516')
+  },
+  {
+    code: 'IS 1199 (Part 2):2018',
+    title: 'Fresh concrete — Methods of sampling and analysis — Workability by slump test',
+    role: 'Mandatory Test',
+    purpose: 'Standard site test measuring workability and consistency of fresh concrete using standard slump cone apparatus.',
+    keyClauses: [
+      'Clause 4: Slump cone filling in 3 equal layers, tamped 25 strokes with bullet-nose rod',
+      'Clause 5: True slump measurement within 2 minutes of sampling'
+    ],
+    testParametersOrAcceptance: 'Pumped structural concrete: True slump 100 to 125 mm; Shear or collapse slump requires immediate batch rejection.',
+    isMandatoryQco: true,
+    bisUrl: getBisStandardVerificationUrl('IS 1199')
+  },
+  {
+    code: 'IS 9103:1999',
+    title: 'Concrete admixtures — Specification',
+    role: 'Chemical Analysis',
+    purpose: 'Governs polycarboxylate ether (PCE) superplasticizers and water reducers to achieve high workability with low water-cement ratio.',
+    keyClauses: [
+      'Clause 4: Water reduction capability (min 20% reduction for superplasticizer)',
+      'Clause 6: Compressive strength ratio (min 110% of control mix at 28 days)'
+    ],
+    testParametersOrAcceptance: 'Zero bleeding or segregation; air entrainment controlled to < 2.0% above control.',
+    isMandatoryQco: true,
+    bisUrl: getBisStandardVerificationUrl('IS 9103')
+  }
+];
+
+export const AAC_APPLICABLE_STANDARDS: ApplicableStandardDetail[] = [
+  {
+    code: 'IS 2185 (Part 3):1984',
+    title: 'Concrete masonry units — Autoclaved cellular concrete blocks — Specification',
+    role: 'Core Specification',
+    purpose: 'Primary standard governing physical dimensions, dry density grades, compressive strength, and shrinkage of AAC blocks.',
+    keyClauses: [
+      'Clause 5: Block compressive strength (Grade 1: Min 4.0 N/mm²)',
+      'Clause 6: Oven-dry density (Grade 1: 551 to 650 kg/m³)',
+      'Clause 7: Drying shrinkage limit (< 0.05%)'
+    ],
+    testParametersOrAcceptance: 'Compressive strength ≥ 4.0 N/mm²; dry density 551-650 kg/m³; dimensional tolerance ± 1.5mm.',
+    isMandatoryQco: true,
+    bisUrl: getBisStandardVerificationUrl('IS 2185')
+  },
+  {
+    code: 'IS 6041:1985',
+    title: 'Code of practice for construction of autoclaved cellular concrete block masonry',
+    role: 'Structural Design & Detailing',
+    purpose: 'Standardizes mortar joints, reinforcement ties, lintel bearings, and chasing protocols for crack-free AAC walls.',
+    keyClauses: [
+      'Clause 4: Thin-bed polymer adhesive mortar joint thickness (2mm to 3mm)',
+      'Clause 7: Control joints and bond beams at window sill and lintel levels'
+    ],
+    testParametersOrAcceptance: 'Thin joint polymer adhesive conforming to ASTM C1660 / IS 15477; full bed coverage without air gaps.',
+    isMandatoryQco: false,
+    bisUrl: getBisStandardVerificationUrl('IS 6041')
+  },
+  {
+    code: 'IS 2250:1981',
+    title: 'Code of practice for preparation and use of masonry mortars',
+    role: 'Mandatory Test',
+    purpose: 'Specifies mix proportions, water retention, and compressive strength of mortars used for block laying.',
+    keyClauses: [
+      'Clause 5: Compressive strength of masonry mortar (Grade MM 5: Min 5.0 N/mm²)',
+      'Clause 6: Water retentivity test (> 70%)'
+    ],
+    testParametersOrAcceptance: 'Mortar cube strength ≥ 5.0 N/mm²; high water retention to prevent rapid dewatering into AAC blocks.',
+    isMandatoryQco: true,
+    bisUrl: getBisStandardVerificationUrl('IS 2250')
+  }
+];
+
+export const STRUCTURAL_STEEL_APPLICABLE_STANDARDS: ApplicableStandardDetail[] = [
+  {
+    code: 'IS 2062:2021',
+    title: 'Hot rolled medium and high tensile structural steel — Specification (Eighth Revision)',
+    role: 'Core Specification',
+    purpose: 'Primary specification governing structural steel plates, beams, columns, angles, and channels.',
+    keyClauses: [
+      'Clause 5 & Table 2: Yield stress, UTS, and % elongation for grades E250, E350, E410',
+      'Clause 6 & Table 1: Chemical composition and Carbon Equivalent (CE max 0.42%)',
+      'Clause 8: Charpy V-notch impact toughness requirements'
+    ],
+    testParametersOrAcceptance: 'E250: Min Yield = 250 MPa, UTS = 410 MPa, Elongation ≥ 23%; E350: Min Yield = 350 MPa, UTS = 490 MPa, Elongation ≥ 22%.',
+    isMandatoryQco: true,
+    bisUrl: getBisStandardVerificationUrl('IS 2062')
+  },
+  {
+    code: 'IS 800:2007',
+    title: 'General construction in steel — Code of practice (Limit State Design, Third Revision)',
+    role: 'Structural Design & Detailing',
+    purpose: 'The foundational Indian standard for design and detailing of steel building frames, trusses, purlins, and connections.',
+    keyClauses: [
+      'Section 3: Materials and design properties',
+      'Section 5: Limit state design principles for tension, compression, and flexure members',
+      'Section 10: Connections (bolted, riveted, and welded joints)'
+    ],
+    testParametersOrAcceptance: 'Partial safety factors: gamma_m0 = 1.10 for yield, gamma_m1 = 1.25 for ultimate strength.',
+    isMandatoryQco: true,
+    bisUrl: getBisStandardVerificationUrl('IS 800')
+  },
+  {
+    code: 'IS 1608 (Part 1):2018',
+    title: 'Metallic materials — Tensile testing at room temperature',
+    role: 'Mandatory Test',
+    purpose: 'Standard tensile testing for yield strength, tensile strength, and percentage elongation after fracture.',
+    keyClauses: [
+      'Clause 6: Test piece preparation and cross-sectional measurement',
+      'Clause 10: Upper and lower yield strength determination'
+    ],
+    testParametersOrAcceptance: 'Tensile test coupons cut longitudinal to rolling direction must meet IS 2062 grade limits.',
+    isMandatoryQco: true,
+    bisUrl: getBisStandardVerificationUrl('IS 1608')
+  },
+  {
+    code: 'IS 1757 (Part 1):2020',
+    title: 'Metallic materials — Charpy pendulum impact test',
+    role: 'Mandatory Test',
+    purpose: 'Measures notch impact toughness energy to prevent brittle fracture in cold weather and dynamic loading.',
+    keyClauses: [
+      'Clause 6: Standard 10x10x55 mm Charpy V-notch specimen dimensions',
+      'Clause 8: Striking energy and absorbed energy recording'
+    ],
+    testParametersOrAcceptance: 'Sub-quality B: Min 27 Joules at 0°C; Sub-quality C: Min 27 Joules at -20°C.',
+    isMandatoryQco: true,
+    bisUrl: getBisStandardVerificationUrl('IS 1757')
+  }
+];
+
+export const BITUMEN_APPLICABLE_STANDARDS: ApplicableStandardDetail[] = [
+  {
+    code: 'IS 73:2018',
+    title: 'Paving bitumen — Specification (Fifth Revision, Viscosity Grades VG-10, VG-20, VG-30, VG-40)',
+    role: 'Core Specification',
+    purpose: 'Governing product specification for refinery-produced viscosity graded paving bitumen for road construction.',
+    keyClauses: [
+      'Clause 4 & Table 1: Absolute viscosity at 60°C and kinematic viscosity at 135°C',
+      'Clause 5: Penetration, softening point, and flash point thresholds'
+    ],
+    testParametersOrAcceptance: 'VG-30: Absolute Viscosity 2400-3600 Poise, Penetration 50-70, Softening point ≥ 47°C, Ductility ≥ 40 cm.',
+    isMandatoryQco: true,
+    bisUrl: getBisStandardVerificationUrl('IS 73')
+  },
+  {
+    code: 'IS 1206 (Part 2):1978',
+    title: 'Methods for testing tar and bituminous materials — Determination of absolute viscosity',
+    role: 'Mandatory Test',
+    purpose: 'Determines absolute viscosity in poises at 60°C using vacuum capillary viscometer (Cannon-Manning or Asphalt Institute).',
+    keyClauses: [
+      'Clause 4: Viscometer bath temperature control at 60.0 ± 0.1°C',
+      'Clause 6: Vacuum application (300 mmHg) and timing timing marks'
+    ],
+    testParametersOrAcceptance: 'VG-30: 2400 to 3600 Poise; VG-40: 3200 to 4800 Poise.',
+    isMandatoryQco: true,
+    bisUrl: getBisStandardVerificationUrl('IS 1206')
+  },
+  {
+    code: 'IS 1203:1978',
+    title: 'Methods for testing tar and bituminous materials — Determination of penetration',
+    role: 'Mandatory Test',
+    purpose: 'Measures consistency of bitumen by determining depth of penetration of standard needle under 100g load at 25°C for 5 seconds.',
+    keyClauses: [
+      'Clause 4: Water bath temperature conditioning at 25.0 ± 0.1°C for 1.5 hours',
+      'Clause 6: Release and measurement of needle penetration in tenths of millimeter'
+    ],
+    testParametersOrAcceptance: 'VG-30: 45 to 70 (in 0.1 mm); VG-40: 35 to 55.',
+    isMandatoryQco: true,
+    bisUrl: getBisStandardVerificationUrl('IS 1203')
+  },
+  {
+    code: 'IS 1205:1978',
+    title: 'Methods for testing tar and bituminous materials — Determination of softening point',
+    role: 'Mandatory Test',
+    purpose: 'Determines softening temperature using ring and ball apparatus in water bath.',
+    keyClauses: [
+      'Clause 4: Brass ring and steel ball (3.5g) setup',
+      'Clause 6: Heating rate at 5.0 ± 0.5°C per minute'
+    ],
+    testParametersOrAcceptance: 'Softening point: Min 47°C (VG-30) / Min 50°C (VG-40).',
+    isMandatoryQco: true,
+    bisUrl: getBisStandardVerificationUrl('IS 1205')
+  },
+  {
+    code: 'IS 8887:2018',
+    title: 'Bitumen emulsion for roads (cationic type) — Specification',
+    role: 'Core Specification',
+    purpose: 'Specifies cationic bitumen emulsion used for prime coat, tack coat, and surface dressing.',
+    keyClauses: [
+      'Clause 4: Rapid Setting (RS), Medium Setting (MS), and Slow Setting (SS)',
+      'Clause 6: Residue on 600-micron sieve and Saybolt Furol viscosity'
+    ],
+    testParametersOrAcceptance: 'Bitumen content min 60% by mass; particle charge must be cationic (+).',
+    isMandatoryQco: true,
+    bisUrl: getBisStandardVerificationUrl('IS 8887')
+  }
+];
+
+export const PRESTRESSING_STRANDS_APPLICABLE_STANDARDS: ApplicableStandardDetail[] = [
+  {
+    code: 'IS 14268:2022',
+    title: 'Prestressing steel — Uncoated stress relieved low relaxation seven-ply strand — Specification',
+    role: 'Core Specification',
+    purpose: 'Governing product specification for 12.7mm and 15.2mm high-tensile 7-ply strands for bridge girders and post-tensioning.',
+    keyClauses: [
+      'Clause 6 & Table 2: Breaking strength (Min 1860 MPa for Class 2 Strands)',
+      'Clause 7: 0.2% proof load (Min 88% of breaking load)',
+      'Clause 8: 1000-hr relaxation test at 20°C (Max 2.5% at 70% UTS initial load)'
+    ],
+    testParametersOrAcceptance: 'Nominal breaking load ≥ 183.7 kN (12.7mm) / ≥ 260.7 kN (15.2mm); Elongation at max load ≥ 3.5%.',
+    isMandatoryQco: true,
+    bisUrl: getBisStandardVerificationUrl('IS 14268')
+  },
+  {
+    code: 'IS 1343:2012',
+    title: 'Prestressed concrete — Code of practice (Third Revision)',
+    role: 'Structural Design & Detailing',
+    purpose: 'Core Indian engineering code for prestressed concrete design, tendon profiling, friction/wobble losses, and anchor zone design.',
+    keyClauses: [
+      'Section 4: Design requirements for limit states of serviceability and collapse',
+      'Clause 19: Estimation of prestress losses (friction, wobble, elastic shortening, creep, relaxation)'
+    ],
+    testParametersOrAcceptance: 'Anchor zone burst reinforcement; tendon duct spacing; allowable tensile stress in extreme fibers.',
+    isMandatoryQco: true,
+    bisUrl: getBisStandardVerificationUrl('IS 1343')
+  },
+  {
+    code: 'IS 1608 (Part 1):2018',
+    title: 'Metallic materials — Tensile testing (Proof load and ultimate strength)',
+    role: 'Mandatory Test',
+    purpose: 'Evaluates characteristic breaking load and 0.2% proof load of full 7-wire strand assemblies using specialized gripping chucks.',
+    keyClauses: [
+      'Clause 6: Test piece gauge length and wedge grip alignment',
+      'Clause 10: Automatic extensometer proof load recording'
+    ],
+    testParametersOrAcceptance: 'Zero wire slippage inside grips; failure must occur clear of chuck grips in the free length.',
+    isMandatoryQco: true,
+    bisUrl: getBisStandardVerificationUrl('IS 1608')
+  }
+];
+
+
 /**
  * Comprehensive catalog of verified materials for Building projects
  */
@@ -285,40 +763,7 @@ const BUILDING_TENDER_MATERIALS: TenderRequiredProduct[] = [
     certificationVerificationUrl: getBisStandardVerificationUrl('IS 269'),
     manakonlineSearchUrl: getManakonlineSearchUrl('IS 269'),
     notesForProcurement: 'Must be procured in sealed tamper-proof bags with BIS ISI hallmark and batch CM/L number. Bags older than 90 days must be retested before use.',
-    applicableStandards: [
-      {
-        code: 'IS 269:2015',
-        title: 'Ordinary Portland Cement — Specification (Consolidated 33, 43 and 53 Grades)',
-        role: 'Core Specification',
-        purpose: 'Primary specification governing ordinary portland cement manufacturing, physical and chemical composition, fineness, strength grades, and packing.',
-        isMandatoryQco: true,
-        bisUrl: getBisStandardVerificationUrl('IS 269')
-      },
-      {
-        code: 'IS 4031 (Parts 1 to 15)',
-        title: 'Methods of physical tests for hydraulic cement',
-        role: 'Mandatory Test',
-        purpose: 'Prescribes standardized testing procedures for fineness (Part 2), soundness (Part 3), setting time (Part 5), compressive strength (Part 6), and heat of hydration.',
-        isMandatoryQco: true,
-        bisUrl: getBisStandardVerificationUrl('IS 4031')
-      },
-      {
-        code: 'IS 4032:1985',
-        title: 'Method of chemical analysis of hydraulic cement',
-        role: 'Chemical Analysis',
-        purpose: 'Chemical determination of insoluble residue, magnesia (MgO), sulfuric anhydride (SO3), loss on ignition (LOI), and alkali content (Na2O + 0.658 K2O).',
-        isMandatoryQco: true,
-        bisUrl: getBisStandardVerificationUrl('IS 4032')
-      },
-      {
-        code: 'IS 3535:1986',
-        title: 'Methods of sampling hydraulic cements',
-        role: 'Sampling & Quality Inspection',
-        purpose: 'Prescribes procedures for sampling cement from bags, bulk tankers, and storage silos for quality assurance testing.',
-        isMandatoryQco: false,
-        bisUrl: getBisStandardVerificationUrl('IS 3535')
-      }
-    ]
+    applicableStandards: CEMENT_APPLICABLE_STANDARDS
   },
   {
     id: 'bldg-aggregates',
@@ -343,7 +788,8 @@ const BUILDING_TENDER_MATERIALS: TenderRequiredProduct[] = [
     certificationType: 'BIS ISI Mark',
     certificationVerificationUrl: getBisStandardVerificationUrl('IS 383'),
     manakonlineSearchUrl: getManakonlineSearchUrl('IS 383'),
-    notesForProcurement: 'Must be procured from approved mechanized crushing quarries. All weathered or river gravel stones prohibited.'
+    notesForProcurement: 'Must be procured from approved mechanized crushing quarries. All weathered or river gravel stones prohibited.',
+    applicableStandards: AGGREGATES_APPLICABLE_STANDARDS
   },
   {
     id: 'bldg-sand',
@@ -367,7 +813,8 @@ const BUILDING_TENDER_MATERIALS: TenderRequiredProduct[] = [
     certificationType: 'BIS ISI Mark',
     certificationVerificationUrl: getBisStandardVerificationUrl('IS 383'),
     manakonlineSearchUrl: getManakonlineSearchUrl('IS 383'),
-    notesForProcurement: 'Eco-friendly alternative to river sand. Triple-washed manufactured sand prevents voids and minimizes cement paste demand.'
+    notesForProcurement: 'Eco-friendly alternative to river sand. Triple-washed manufactured sand prevents voids and minimizes cement paste demand.',
+    applicableStandards: SAND_APPLICABLE_STANDARDS
   },
   {
     id: 'bldg-concrete',
@@ -392,7 +839,8 @@ const BUILDING_TENDER_MATERIALS: TenderRequiredProduct[] = [
     certificationType: 'BIS ISI Mark',
     certificationVerificationUrl: getBisStandardVerificationUrl('IS 456'),
     manakonlineSearchUrl: getManakonlineSearchUrl('IS 456'),
-    notesForProcurement: 'Transit mixers must deliver within 90 minutes of batching. Batch printouts detailing cement, aggregate, water, and admixture weights must be filed.'
+    notesForProcurement: 'Transit mixers must deliver within 90 minutes of batching. Batch printouts detailing cement, aggregate, water, and admixture weights must be filed.',
+    applicableStandards: CONCRETE_APPLICABLE_STANDARDS
   },
   {
     id: 'bldg-aac',
@@ -417,7 +865,8 @@ const BUILDING_TENDER_MATERIALS: TenderRequiredProduct[] = [
     certificationType: 'BIS ISI Mark',
     certificationVerificationUrl: getBisStandardVerificationUrl('IS 2185'),
     manakonlineSearchUrl: getManakonlineSearchUrl('IS 2185'),
-    notesForProcurement: 'Lighter wall dead-load reduces steel requirement by up to 12% in multi-storey RCC frame buildings.'
+    notesForProcurement: 'Lighter wall dead-load reduces steel requirement by up to 12% in multi-storey RCC frame buildings.',
+    applicableStandards: AAC_APPLICABLE_STANDARDS
   },
   {
     id: 'bldg-waterproofing',
@@ -597,7 +1046,8 @@ const ROAD_TENDER_MATERIALS: TenderRequiredProduct[] = [
     certificationType: 'BIS ISI Mark',
     certificationVerificationUrl: getBisStandardVerificationUrl('IS 73'),
     manakonlineSearchUrl: getManakonlineSearchUrl('IS 73'),
-    notesForProcurement: 'Must be sourced directly from public sector refinery depots (IOCL, BPCL, HPCL) with computerized refinery test certificates.'
+    notesForProcurement: 'Must be sourced directly from public sector refinery depots (IOCL, BPCL, HPCL) with computerized refinery test certificates.',
+    applicableStandards: BITUMEN_APPLICABLE_STANDARDS
   },
   {
     id: 'road-asphalt-agg',
@@ -622,7 +1072,8 @@ const ROAD_TENDER_MATERIALS: TenderRequiredProduct[] = [
     certificationType: 'BIS ISI Mark',
     certificationVerificationUrl: getBisStandardVerificationUrl('IS 383'),
     manakonlineSearchUrl: getManakonlineSearchUrl('IS 383'),
-    notesForProcurement: 'Aggregates must be batch-mixed through computerized electronic asphalt drum mix plants.'
+    notesForProcurement: 'Aggregates must be batch-mixed through computerized electronic asphalt drum mix plants.',
+    applicableStandards: AGGREGATES_APPLICABLE_STANDARDS
   },
   {
     id: 'road-wmm',
@@ -646,7 +1097,8 @@ const ROAD_TENDER_MATERIALS: TenderRequiredProduct[] = [
     certificationType: 'MoRTH / IRC Certified',
     certificationVerificationUrl: getBisStandardVerificationUrl('IS 383'),
     manakonlineSearchUrl: getManakonlineSearchUrl('IS 383'),
-    notesForProcurement: 'Manual on-road wet mixing strictly prohibited. Mandatory automated pugmill batching plant.'
+    notesForProcurement: 'Manual on-road wet mixing strictly prohibited. Mandatory automated pugmill batching plant.',
+    applicableStandards: AGGREGATES_APPLICABLE_STANDARDS
   },
   {
     id: 'road-gsb',
@@ -670,7 +1122,8 @@ const ROAD_TENDER_MATERIALS: TenderRequiredProduct[] = [
     certificationType: 'MoRTH / IRC Certified',
     certificationVerificationUrl: getBisStandardVerificationUrl('IS 2720'),
     manakonlineSearchUrl: getManakonlineSearchUrl('IS 2720'),
-    notesForProcurement: 'Provides non-erodible drainage cushion underneath heavy traffic carriageway.'
+    notesForProcurement: 'Provides non-erodible drainage cushion underneath heavy traffic carriageway.',
+    applicableStandards: AGGREGATES_APPLICABLE_STANDARDS
   },
   {
     id: 'road-dowels',
@@ -798,7 +1251,8 @@ const BRIDGE_TENDER_MATERIALS: TenderRequiredProduct[] = [
     certificationType: 'BIS ISI Mark',
     certificationVerificationUrl: getBisStandardVerificationUrl('IS 14268'),
     manakonlineSearchUrl: getManakonlineSearchUrl('IS 14268'),
-    notesForProcurement: 'Mandatory BIS ISI mark tag on every coil. Coils showing any red surface rust or pitting must be rejected.'
+    notesForProcurement: 'Mandatory BIS ISI mark tag on every coil. Coils showing any red surface rust or pitting must be rejected.',
+    applicableStandards: PRESTRESSING_STRANDS_APPLICABLE_STANDARDS
   },
   {
     id: 'brg-rebar',
@@ -847,7 +1301,8 @@ const BRIDGE_TENDER_MATERIALS: TenderRequiredProduct[] = [
     certificationType: 'BIS ISI Mark',
     certificationVerificationUrl: getBisStandardVerificationUrl('IS 269'),
     manakonlineSearchUrl: getManakonlineSearchUrl('IS 269'),
-    notesForProcurement: 'Low alkali content is mandatory in IRC:112 to eliminate long-term concrete cancer (ASR gel expansion).'
+    notesForProcurement: 'Low alkali content is mandatory in IRC:112 to eliminate long-term concrete cancer (ASR gel expansion).',
+    applicableStandards: CEMENT_APPLICABLE_STANDARDS
   },
   {
     id: 'brg-bearings',
@@ -921,7 +1376,8 @@ const BRIDGE_TENDER_MATERIALS: TenderRequiredProduct[] = [
     certificationType: 'BIS ISI Mark',
     certificationVerificationUrl: getBisStandardVerificationUrl('IS 1343'),
     manakonlineSearchUrl: getManakonlineSearchUrl('IS 1343'),
-    notesForProcurement: 'Requires computerized continuous pan mixer with micro-silica and polycarboxylate ether superplasticizer (IS 9103).'
+    notesForProcurement: 'Requires computerized continuous pan mixer with micro-silica and polycarboxylate ether superplasticizer (IS 9103).',
+    applicableStandards: CONCRETE_APPLICABLE_STANDARDS
   }
 ];
 
@@ -972,4 +1428,70 @@ export function extractTenderRequiredProducts(
   }
 
   return products;
+}
+
+/**
+ * Connects to the server API to generate the full BIS standards suite
+ * for the whole project using the Gemini LLM model (gemini-3.8-flash) on the backend,
+ * cross-referenced with the Bureau of Indian Standards database.
+ */
+export async function generateWholeProjectBisStandards(
+  req: ExtractedTenderRequirement,
+  rawText?: string
+): Promise<{
+  projectStandardsSummary: string;
+  primaryGoverningStandards: any[];
+  materials: TenderRequiredProduct[];
+  tenderDraftClause?: string;
+  source: string;
+}> {
+  // Query server backend LLM API
+  const apiResult = await generateProjectBisStandardsWithApi({
+    projectName: req.projectName,
+    category: req.category,
+    location: `${req.location}, ${req.stateCity}`,
+    description: req.description,
+    qualitySpecifications: req.qualitySpecifications,
+    buildingSpecs: req.buildingSpecs,
+    roadSpecs: req.roadSpecs,
+    bridgeSpecs: req.bridgeSpecs,
+    materials: req.boqHighlights,
+    rawTextSnippet: rawText || req.rawExtractedSnippet
+  });
+
+  if (apiResult && apiResult.materials && apiResult.materials.length > 0) {
+    return {
+      projectStandardsSummary: apiResult.projectStandardsSummary,
+      primaryGoverningStandards: apiResult.primaryGoverningStandards,
+      materials: apiResult.materials,
+      tenderDraftClause: apiResult.tenderDraftClause,
+      source: apiResult.source
+    };
+  }
+
+  // Authoritative fallback with multi-standard suites
+  const fallbackMaterials = extractTenderRequiredProducts(req, rawText);
+  return {
+    projectStandardsSummary: `Comprehensive Indian Standards (IS) compliance ecosystem for ${req.projectName} (${req.category}). All structural materials strictly governed by BIS specifications and mandatory Quality Control Orders under Section 16 of the BIS Act, 2016.`,
+    primaryGoverningStandards: [
+      {
+        code: req.category === 'road' ? 'IRC:37-2018' : req.category === 'bridge' ? 'IRC:112-2020' : 'IS 456:2000',
+        title: req.category === 'road' ? 'Guidelines for the Design of Flexible Pavements' : req.category === 'bridge' ? 'Code of Practice for Concrete Road Bridges' : 'Plain and Reinforced Concrete — Code of Practice',
+        role: 'Structural Design & Detailing',
+        purpose: 'Governing structural specification and design code.',
+        isMandatoryQco: true,
+        bisUrl: getBisStandardVerificationUrl(req.category === 'road' ? 'IRC 37' : req.category === 'bridge' ? 'IRC 112' : 'IS 456')
+      },
+      {
+        code: req.category === 'road' ? 'IS 73:2018' : req.category === 'bridge' ? 'IS 14268:2022' : 'IS 1786:2008',
+        title: req.category === 'road' ? 'Paving Bitumen — Specification' : req.category === 'bridge' ? 'Prestressing Steel — Low Relaxation 7-Ply Strand' : 'High Strength Deformed Steel Bars for Concrete Reinforcement',
+        role: 'Core Specification',
+        purpose: 'Primary product standard with compulsory ISI marking.',
+        isMandatoryQco: true,
+        bisUrl: getBisStandardVerificationUrl(req.category === 'road' ? 'IS 73' : req.category === 'bridge' ? 'IS 14268' : 'IS 1786')
+      }
+    ],
+    materials: fallbackMaterials,
+    source: 'bis-server-registry'
+  };
 }

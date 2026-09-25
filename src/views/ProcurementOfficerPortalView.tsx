@@ -55,6 +55,7 @@ import {
 } from '../utils/tenderPdfExporter';
 import {
   extractTenderRequiredProducts,
+  generateWholeProjectBisStandards,
   TenderRequiredProduct,
   ApplicableStandardDetail,
   getBisStandardVerificationUrl,
@@ -344,14 +345,53 @@ export const ProcurementOfficerPortalView: React.FC<ProcurementOfficerPortalView
     setTimeout(() => setCopiedStatus(null), 3000);
   };
 
+  // Project standards generation state from backend LLM API (gemini-3.8-flash)
+  const [llmGeneratedMaterials, setLlmGeneratedMaterials] = useState<TenderRequiredProduct[] | null>(null);
+  const [isGeneratingProjectStandards, setIsGeneratingProjectStandards] = useState<boolean>(false);
+  const [standardsSource, setStandardsSource] = useState<string | null>(null);
+
+  // Trigger server-side LLM standards generation whenever tender document is loaded
+  React.useEffect(() => {
+    if (!uploadedTenderDoc) {
+      setLlmGeneratedMaterials(null);
+      setStandardsSource(null);
+      return;
+    }
+
+    let isMounted = true;
+    setIsGeneratingProjectStandards(true);
+
+    generateWholeProjectBisStandards(
+      uploadedTenderDoc.extractedRequirement,
+      uploadedTenderDoc.rawTextSnippet
+    ).then((result) => {
+      if (!isMounted) return;
+      if (result && result.materials && result.materials.length > 0) {
+        setLlmGeneratedMaterials(result.materials);
+        setStandardsSource(result.source);
+      }
+      setIsGeneratingProjectStandards(false);
+    }).catch((err) => {
+      console.warn('Backend API project standards error:', err);
+      if (isMounted) setIsGeneratingProjectStandards(false);
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [uploadedTenderDoc]);
+
   // Derive itemized materials required for this tender along with exact IS standards
   const tenderMaterials = React.useMemo<TenderRequiredProduct[]>(() => {
     if (!uploadedTenderDoc) return [];
+    if (llmGeneratedMaterials && llmGeneratedMaterials.length > 0) {
+      return llmGeneratedMaterials;
+    }
     return extractTenderRequiredProducts(
       uploadedTenderDoc.extractedRequirement,
       uploadedTenderDoc.rawTextSnippet
     );
-  }, [uploadedTenderDoc]);
+  }, [uploadedTenderDoc, llmGeneratedMaterials]);
 
   const materialCategories = React.useMemo<string[]>(() => {
     if (!tenderMaterials.length) return [];
@@ -802,13 +842,25 @@ End of Technical Schedule. Verified against BIS National Standards Database.
                     <div className="border border-amber-300 bg-amber-50/20 rounded-2xl p-5 sm:p-6 space-y-5 shadow-sm">
                       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-amber-200/80 pb-4">
                         <div>
-                          <div className="flex items-center gap-2">
+                          <div className="flex flex-wrap items-center gap-2">
                             <span className="px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300 text-[11px] font-bold uppercase tracking-wider">
                               Mandatory Compliance Schedule
                             </span>
                             <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 text-[11px] font-bold">
                               {tenderMaterials.length} Required Products Identified
                             </span>
+                            {isGeneratingProjectStandards && (
+                              <span className="px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-800 border border-blue-300 text-[11px] font-bold flex items-center gap-1 animate-pulse">
+                                <RefreshCw className="w-3 h-3 text-blue-600 animate-spin" />
+                                Connecting to BIS API & Synthesizing Standards...
+                              </span>
+                            )}
+                            {standardsSource === 'gemini-3.8-flash' && !isGeneratingProjectStandards && (
+                              <span className="px-2.5 py-0.5 rounded-full bg-purple-100 text-purple-800 border border-purple-300 text-[11px] font-bold flex items-center gap-1">
+                                <Sparkles className="w-3 h-3 text-purple-600" />
+                                BIS Standards Generated via LLM (gemini-3.8-flash)
+                              </span>
+                            )}
                           </div>
                           <h3 className="text-lg sm:text-xl font-bold text-slate-900 mt-1 flex items-center gap-2">
                             <Layers className="w-5 h-5 text-amber-600" />
